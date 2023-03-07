@@ -1,0 +1,215 @@
+Az alkalmazás MySQL adatbázissal működik (8.0.28 verzió).
+A működő alkalmazás létrehozásához szükséges lépések:
+Valamilyen MySQL kliens programban test_companies.sql fájl futtatása a 
+test_companies nevű adatbázis létrehozásához. Az adatbázis tartalmazni fogja 
+a Laravel Breeze API változatának az adattábláit is. A php artisan migrate 
+parancsot NEM kell futtatni!
+
+Az alkalmazás letöltése után gyökér könyvtárban: 
+composer install
+.env.example-ről másolat készítése .env néven.
+A .env fájlban át kell írni a DB_DATABASE értékét test_companies-re. Ugyanitt 
+egyéb adatbázis paraméterek módosítása, ha szükséges, pl. jelszó.
+php artisan key:generate
+
+API használata:
+
+1. Egy adott cég adatainak lekérése id alapján:
+HTTP GET metódussal:
+/api/companies/{id}
+pl.: http://localhost/api/companies/3
+
+A válasz JSON formátumú, pl.:
+{
+    "companyId": 3,
+    "companyName": "Egestas Hendrerit Neque LLP",
+    "companyRegistrationNumber": "615308-4733",
+    "companyFoundationDate": "1994-06-10",
+    "country": "Western Sahara",
+    "zipCode": "442580",
+    "city": "Lagundo/Algund",
+    "streetAddress": "P.O. Box 857, 1455 Nullam Street",
+    "latitude": "89.75893000",
+    "longitude": "-125.99941000",
+    "companyOwner": "Todd Douglas",
+    "employees": 230,
+    "activity": "Building Industry",
+    "active": "true",
+    "email": "lacus.Quisque@posuerecubiliaCurae.org",
+    "password": "vestibulum"
+}
+
+A válasz tartalmazza többek között a következő HTTP fejléceket:
+Content-Type: application/json
+Status: 200
+
+Nem létező id megadása esetén:
+"404 NOT FOUND" üzenet HTML formátumban.
+Content-Type: text/html; charset=UTF-8
+Status: 404
+
+Szerver hiba esetén:
+PHP hibaüzenet és stack trace HTML formátumban.
+Content-Type: text/html; charset=UTF-8
+Status: 500
+
+2. Több cég adatainak lekérése id alapján:
+HTTP GET metódussal:
+/api/companies?ids={id1,id2,id3}
+pl.: http://localhost/api/companies?ids=1,2,3
+
+A válasz JSON formátumú, pl.:
+
+[
+    {
+        "companyId": 3,
+        "companyName": "Egestas Hendrerit Neque LLP",
+        "companyRegistrationNumber": "615308-4733",
+        "companyFoundationDate": "1994-06-10",
+        "country": "Western Sahara",
+        "zipCode": "442580",
+        "city": "Lagundo/Algund",
+        "streetAddress": "P.O. Box 857, 1455 Nullam Street",
+        "latitude": "89.75893000",
+        "longitude": "-125.99941000",
+        "companyOwner": "Todd Douglas",
+        "employees": 230,
+        "activity": "Building Industry",
+        "active": "true",
+        "email": "lacus.Quisque@posuerecubiliaCurae.org",
+        "password": "vestibulum"
+    },
+    {
+        "companyId": 4,
+        "companyName": "Ipsum Ac Mi Company",
+        "companyRegistrationNumber": "609476-5515",
+        "companyFoundationDate": "1984-11-28",
+        "country": "Northern Mariana Islands",
+        "zipCode": "64967",
+        "city": "Lonquimay",
+        "streetAddress": "Ap #191-7809 Nec Ave",
+        "latitude": "71.41273000",
+        "longitude": "-64.46302000",
+        "companyOwner": "Hayes Harper",
+        "employees": 491,
+        "activity": "Growing Plants",
+        "active": "false",
+        "email": "convallis.dolor@perinceptos.ca",
+        "password": "nulla."
+    }
+]
+
+A válasz tartalmazza többek között a következő HTTP fejléceket:
+Content-Type: application/json
+Status: 200
+
+Ha a megadott id lista nem értelmezhető egyetlen érvényes id-ként sem, akkor 
+üres JSON tömb a válasz:
+[]
+Content-Type: application/json
+Status: 200
+
+Szerver hiba esetén:
+PHP hibaüzenet és stack trace HTML formátumban.
+Content-Type: text/html; charset=UTF-8
+Status: 500
+
+3. Új cég felvitele:
+HTTP POST metódussal:
+/api/companies
+pl.: http://localhost/api/companies
+Az adatok formátuma JSON kell legyen, minden mező megadása kötelező, az id-t az 
+adatbázis automatikusan generálja. Pl.:
+{
+	"companyName": "Új cég 3",
+	"companyRegistrationNumber": "615308-4733",
+	"companyFoundationDate": "1994-06-10",
+	"country": "Western Sahara",
+	"zipCode": "442580",
+	"city": "Lagundo/Algund",
+	"streetAddress": "P.O. Box 857, 1455 Nullam Street",
+	"latitude": "89.75893000",
+	"longitude": "-125.99941000",
+	"companyOwner": "Todd Douglas",
+	"employees": 230,
+	"activity": "Building Industry",
+	"active": "true",
+	"email": "lacus.Quisque@posuerecubiliaCurae.org",
+	"password": "vestibulum"
+}
+
+Válasz sikeres adatfelvitel esetén:
+{
+    "status": "success",
+    "message": "Company created."
+}
+
+A válasz tartalmazza többek között a következő HTTP fejléceket:
+A "Location" fejléc tartalmazza az újonnan létrehozott cég URL-jét, pl.:
+Location: http://localhost/api/companies/102
+Content-Type: application/json
+Status: 201
+
+Válasz nem megfelelő adat(ok) megadása esetén pl.:
+{
+    "success": false,
+    "message": "Validation errors",
+    "data": {
+        "companyFoundationDate": [
+            "The company foundation date is not a valid date."
+        ],
+        "zipCode": [
+            "The zip code may not be greater than 20 characters."
+        ]
+    }
+}
+
+A válasz tartalmazza többek között a következő HTTP fejléceket:
+Content-Type: application/json
+Status: 200
+
+Szerver hiba esetén:
+PHP hibaüzenet és stack trace HTML formátumban.
+Content-Type: text/html; charset=UTF-8
+Status: 500
+
+4. Létező cég adatainak módosítása:
+HTTP PUT vagy PATCH metódussal:
+/api/companies/{id}
+pl.: http://localhost/api/companies/3
+Az adatok formátuma JSON kell legyen, elegendő a módosítandó mezőket megadni. Pl.:
+{
+    "companyName": "Módosított cégnév",
+    "country": "Módosítot országnév"
+}
+
+Az id (companyId) és a companyFoundationDate nem módosítható. companyId megadása 
+esetén, azt a rendszer figyelmen kívül hagyja, nem ad emiatt hibaüzenetet. 
+companyFoundationDate megadása esetén validációs hibaüzenetet kapunk. 
+
+Válasz sikeres adatmódosítás esetén: tartalom nélküli HTTP válasz.
+A válasz tartalmazza többek között a következő HTTP fejlécet:
+Status: 204
+
+Válasz nem megfelelő adat(ok) megadása esetén pl.:
+{
+    "success": false,
+    "message": "Validation errors",
+    "data": {
+        "companyFoundationDate": [
+            "validation.prohibited"
+        ],
+        "zipCode": [
+            "The zip code may not be greater than 20 characters."
+        ]
+    }
+}
+
+A válasz tartalmazza többek között a következő HTTP fejléceket:
+Content-Type: application/json
+Status: 200
+
+Szerver hiba esetén:
+PHP hibaüzenet és stack trace HTML formátumban.
+Content-Type: text/html; charset=UTF-8
+Status: 500
